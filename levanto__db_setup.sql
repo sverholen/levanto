@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `sessions_store` (
 	UNIQUE KEY (`session_id`, `last_access`)
 ) ENGINE="InnoDB" CHARSET="UTF8";
 
+/*
 CREATE TABLE IF NOT EXISTS `visitors` (
 	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	`session` BIGINT UNSIGNED,
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 	`email` VARCHAR(255) NOT NULL DEFAULT '',
 	UNIQUE KEY (`username`)
 ) ENGINE="InnoDB" CHARSET="UTF8";
+*/
 
 CREATE TABLE IF NOT EXISTS `countries` (
 	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -109,6 +111,19 @@ CREATE TABLE IF NOT EXISTS `people` (
 	`contact_details` BIGINT UNSIGNED NOT NULL,
 	FOREIGN KEY (`address`) REFERENCES `addresses`(`id`),
 	FOREIGN KEY (`contact_details`) REFERENCES `contact_details`(`id`)
+) ENGINE="InnoDB" CHARSET="UTF8";
+
+CREATE TABLE IF NOT EXISTS `allergies` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	`allergy` VARCHAR(255) NOT NULL DEFAULT '',
+	UNIQUE KEY (`allergy`)
+) ENGINE="InnoDB" CHARSET="UTF8";
+
+CREATE TABLE IF NOT EXISTS `people_allergies` (
+	`person` BIGINT UNSIGNED,
+	`allergy` BIGINT UNSIGNED,
+	FOREIGN KEY (`person`) REFERENCES `people`(`id`),
+	FOREIGN KEY (`allergy`) REFERENCES `allergies`(`id`)
 ) ENGINE="InnoDB" CHARSET="UTF8";
 
 CREATE TABLE IF NOT EXISTS `organisations_people` (
@@ -183,17 +198,28 @@ CREATE TABLE IF NOT EXISTS `organisations_current_accounts` (
 ) ENGINE="InnoDB" CHARSET="UTF8";
 
 CREATE TABLE IF NOT EXISTS `people_current_accounts` (
-	`person` BIGINT UNSIGNED NOT NULL,,
+	`person` BIGINT UNSIGNED NOT NULL,
 	`current_account` BIGINT UNSIGNED NOT NULL,
 	FOREIGN KEY (`person`) REFERENCES `people`(`id`),
 	FOREIGN KEY (`current_account`) REFERENCES `current_accounts`(`id`),
 	UNIQUE KEY (`person`, `current_account`)
 ) ENGINE="InnoDB" CHARSET="UTF8";
 
+/*
 CREATE TABLE IF NOT EXISTS `transactions` (
 	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	`amount` DECIMAL(9,4) NOT NULL DEFAULT 0.0000,
 	`
+) ENGINE="InnoDB" CHARSET="UTF8";
+*/
+
+CREATE TABLE IF NOT EXISTS `departments` (
+	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	`name` VARCHAR(255) NOT NULL DEFAULT '',
+	`address` BIGINT UNSIGNED,
+	`contact_details` BIGINT UNSIGNED,
+	FOREIGN KEY (`address`) REFERENCES `addresses`(`id`),
+	FOREIGN KEY (`contact_details`) REFERENCES `contact_details`(`id`)
 ) ENGINE="InnoDB" CHARSET="UTF8";
 
 CREATE TABLE IF NOT EXISTS `songs` (
@@ -206,5 +232,15 @@ CREATE TABLE IF NOT EXISTS `songs` (
 CREATE TABLE IF NOT EXISTS `registrations` (
 	`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	`person` BIGINT UNSIGNED,
+	`department` BIGINT UNSIGNED,
 	`attendance` TINYINT(1) NOT NULL DEFAULT 0,
-	FOREIGN KEY (`person`) REFERENCES `people`(`id`)
+	`song1` BIGINT UNSIGNED,
+	`song2` BIGINT UNSIGNED,
+	`song3` BIGINT UNSIGNED,
+	`remarks` TEXT NOT NULL DEFAULT '',
+	FOREIGN KEY (`person`) REFERENCES `people`(`id`),
+	FOREIGN KEY (`department`) REFERENCES `departments`(`id`),
+	FOREIGN KEY (`song1`) REFERENCES `songs`(`id`),
+	FOREIGN KEY (`song2`) REFERENCES `songs`(`id`),
+	FOREIGN KEY (`song3`) REFERENCES `songs`(`id`)
+) ENGINE="InnoDB" CHARSET="UTF8";

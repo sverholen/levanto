@@ -9,6 +9,7 @@ requireClass('lib/contact/Organisation');
 class CurrentAccount extends DBEnabled {
 	
 	public static $TABLE				= 'current_accounts';
+	public static $TABLE_ALIAS			= 'cac';
 	
 	public static $KEY_NAME				= 'name';
 	public static $KEY_ORGANISATION		= 'organisation';
@@ -25,14 +26,18 @@ class CurrentAccount extends DBEnabled {
 	public function __clone() {}
 	
 	public static function getTable() {
-		$table = new Table(self::$TABLE);
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			$table -> parseColumn(self::$KEY_NAME);
+			$table -> parseForeignKey(
+					self::$KEY_ORGANISATION, Organisation::getTable());
+			
+			$this -> setSQLTable($table);
+		}
 		
-		$table -> parsePrimaryKey(self::$KEY_ID);
-		$table -> parseColumn(self::$KEY_NAME);
-		$table -> parseForeignKey(
-				self::$KEY_ORGANISATION, Organisation::getTable());
-		
-		$this -> setTable($table);
+		return $this -> getSQLTable();
 	}
 	
 	public function setName($name) {

@@ -9,14 +9,13 @@ requireClass('lib/contact/Person');
 
 class Customer extends Contact {
 	
-	public static $TABLE			= 'customers';
+	public static $TABLE				= 'customers';
+	public static $TABLE_ALIAS			= 'cus';
 	
-	public static $PREFIX			= 'customer_';
-	
-	public static $KEY_FIRST_NAME	= 'first_name';
-	public static $KEY_LAST_NAME	= 'last_name';
-	public static $KEY_FUNCTION		= 'function';
-	public static $KEY_ORGANISATION	= 'organisation';
+	public static $KEY_FIRST_NAME		= 'first_name';
+	public static $KEY_LAST_NAME		= 'last_name';
+	public static $KEY_FUNCTION			= 'function';
+	public static $KEY_ORGANISATION		= 'organisation';
 	
 	private $firstName = '';
 	private $lastName = '';
@@ -27,18 +26,37 @@ class Customer extends Contact {
 			$firstName = '',
 			$lastName = '',
 			$function = '',
+			$address = null,
+			$contactDetails = null,
 			CustomerOrganisation $organisation = null) {
 		$this -> setFirstName($firstName);
 		$this -> setLastName($lastName);
 		$this -> setFunction($function);
+		$this -> setAddress($address);
+		$this -> setContactDetails($contactDetails);
 		$this -> setOrganisation($organisation);
+	}
+	public function __clone() {}
+	
+	public static function getTable() {
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			$table -> parseColumn(self::$KEY_FIRST_NAME);
+			$table -> parseColumn(self::$KEY_LAST_NAME);
+			$table -> parseColumn(self::$KEY_FUNCTION);
+			$table -> parseForeignKey(
+					self::$KEY_ADDRESS, Address::getTable());
+			$table -> parseForeignKey(
+					self::$KEY_CONTACT_DETAILS, ContactDetails::getTable());
+			$table -> parseForeignKey(
+					self::$KEY_ORGANISATION, Organisation::getTable());
+			
+			$this -> setSQLTable($table);
+		}
 		
-		$this -> setTable(self::$TABLE);
-		$this -> setPrimaryKey(self::$KEY_ID);
-		$this -> addKey(self::$KEY_FIRST_NAME);
-		$this -> addKey(self::$KEY_LAST_NAME);
-		$this -> addKey(self::$KEY_FUNCTION);
-		$this -> addForeignKey(self::$KEY_ORGANISATION);
+		return $this -> getSQLTable();
 	}
 	
 	public function setFirstName($firstName) {

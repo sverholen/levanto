@@ -8,14 +8,15 @@ requireClass('lib/accounting/AccountValidation');
 
 class Account extends DBEnabled {
 	
-	private static $TABLE = 'accounts';
+	private static $TABLE				= 'accounts';
+	private static $TABLE_ALIAS			= 'acc';
 	
-	public static $KEY_ORGANISATION = 'organisation';
-	public static $KEY_ACCOUNT = 'account';
-	public static $KEY_BANK = 'bank';
-	public static $KEY_BIC = 'bic';
-	public static $KEY_IBAN = 'iban';
-	public static $KEY_NUMBER = 'number';
+	public static $KEY_ORGANISATION		= 'organisation';
+	public static $KEY_ACCOUNT			= 'account';
+	public static $KEY_BANK				= 'bank';
+	public static $KEY_BIC				= 'bic';
+	public static $KEY_IBAN				= 'iban';
+	public static $KEY_NUMBER			= 'number';
 	
 	private $organisation = null;
 	private $account = '';
@@ -41,16 +42,22 @@ class Account extends DBEnabled {
 	public function __clone() {}
 	
 	public static function getTable() {
-		$table = new Table(self::$TABLE);
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			$table -> parseForeignKey(
+					self::$KEY_ORGANISATION, Organisation::getTable());
+			$table -> parseColumn(self::$KEY_ACCOUNT);
+			$table -> parseColumn(self::$KEY_BANK, ColumnType::getChar());
+			$table -> parseColumn(self::$KEY_BIC, ColumnType::getChar());
+			$table -> parseColumn(self::$KEY_IBAN, ColumnType::getChar());
+			$table -> parseColumn(self::$KEY_NUMBER, ColumnType::getChar());
+			
+			$this -> setSQLTable($table);
+		}
 		
-		$table -> parsePrimaryKey(self::$KEY_ID);
-		$table -> parseForeignKey(self::$KEY_ORGANISATION);
-		$table -> parseKey(self::$KEY_ACCOUNT);
-		$table -> parseKey(self::$KEY_BANK);
-		$table -> parseKey(self::$KEY_BIC);
-		$table -> parseKey(self::$KEY_IBAN);
-		
-		return $table;
+		return $this -> getSQLTable();
 	}
 	
 	public function setOrganisation(Organisation $organisation = null) {

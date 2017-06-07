@@ -9,15 +9,6 @@ abstract class DBEnabled implements DBKeyIterable {
 	
 	public static $KEY_ID						= 'id';
 	
-	public static $ALIAS_ACCOUNTS				= 'acc';
-	public static $ALIAS_ADDRESSES				= 'add';
-	public static $ALIAS_CONTACT_DETAILS		= 'cod';
-	public static $ALIAS_COUNTRIES				= 'cou';
-	public static $ALIAS_CUSTOMERS				= 'cus';
-	public static $ALIAS_CUSTOMER_ORGANISATIONS	= 'cuo';
-	public static $ALIAS_ORGANISATIONS			= 'org';
-	public static $ALIAS_PEOPLE					= 'peo';
-	
 	private $id = 0;
 	private $table = null;
 	
@@ -30,11 +21,14 @@ abstract class DBEnabled implements DBKeyIterable {
 	public abstract function update();
 	public abstract function delete();
 	
-	protected function setTable(Table $table) {
+	protected function setSQLTable(Table $table) {
 		$this -> table = $table;
 	}
-	public function getTable() {
+	protected function getSQLTable() {
 		return $this -> table;
+	}
+	protected function hasSQLTable() {
+		return $this -> getSQLTable() != null;
 	}
 	
 	protected function setPrimaryKey($primaryKey) {
@@ -187,19 +181,22 @@ interface DBKeyIterable {
 	 * to false for output intended for INSERT statements and to true for
 	 * output intended for SELECT statements).
 	 */
+	/*
 	public static function listKeys(
 			$keyAlias = '',
 			$tableAlias = '',
 			$includeForeignKeys = false,
 			$includeID = false);
-	
+	*/
 	public static function getTable();
 	
+	/*
 	public static function insertKeys();
 	public static function selectKeys();
 	
 	public static function getIDAlias();
 	public static function getTableAlias();
+	*/
 }
 
 ?>

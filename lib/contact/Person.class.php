@@ -8,6 +8,7 @@ requireClass('lib/contact/Contact');
 class Person extends Contact {
 	
 	public static $TABLE				= 'people';
+	public static $TABLE_ALIAS			= 'peo';
 	
 	public static $KEY_FIRST_NAME		= 'first_name';
 	public static $KEY_LAST_NAME		= 'last_name';
@@ -24,8 +25,25 @@ class Person extends Contact {
 		$this -> setLastName($lastName);
 		$this -> setAddress($address);
 		$this -> setContactDetails($contactDetails);
+	}
+	public function __clone() {}
+	
+	public static function getTable() {
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			$table -> parseColumn(self::$KEY_FIRST_NAME);
+			$table -> parseColumn(self::$KEY_LAST_NAME);
+			$table -> parseForeignKey(
+					self::$KEY_ADDRESS, Address::getTable());
+			$table -> parseForeingKey(
+					self::$KEY_CONTACT_DETAILS, ContactDetails::getTable());
+			
+			$this -> setSQLTable($table);
+		}
 		
-		$this -> setTable(self::$TABLE);
+		return $this -> getSQLTable();
 	}
 	
 	public function setFirstName($firstName) {

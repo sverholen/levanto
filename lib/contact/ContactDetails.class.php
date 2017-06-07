@@ -8,14 +8,15 @@ requireClass('tools/InputCleaner');
 
 class ContactDetails extends DBEnabled {
 	
-	public static $TABLE			= 'contact_details';
+	public static $TABLE				= 'contact_details';
+	public static $TABLE_ALIAS			= 'cod';
 	
-	public static $KEY_ENABLE		= 'enable_contact_details';
-	public static $KEY_EMAIL		= 'email';
-	public static $KEY_PHONE		= 'phone';
-	public static $KEY_CELL			= 'cell';
-	public static $KEY_FAX			= 'fax';
-	public static $KEY_WEBSITE		= 'website';
+	public static $KEY_ENABLE			= 'enable_contact_details';
+	public static $KEY_EMAIL			= 'email';
+	public static $KEY_PHONE			= 'phone';
+	public static $KEY_CELL				= 'cell';
+	public static $KEY_FAX				= 'fax';
+	public static $KEY_WEBSITE			= 'website';
 	
 	private $email = '';
 	private $phone = '';
@@ -34,14 +35,23 @@ class ContactDetails extends DBEnabled {
 		$this -> setCell($cell);
 		$this -> setFax($fax);
 		$this -> setWebsite($website);
+	}
+	
+	public static function getTable() {
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			$table -> parseColumn(self::$KEY_EMAIL);
+			$table -> parseColumn(self::$KEY_PHONE);
+			$table -> parseColumn(self::$KEY_CELL);
+			$table -> parseColumn(self::$KEY_FAX);
+			$table -> parseColumn(self::$KEY_WEBSITE);
+			
+			$this -> setSQLTable($table);
+		}
 		
-		$this -> setTable(self::$TABLE);
-		$this -> setPrimaryKey(self::$KEY_ID);
-		$this -> addKey(self::$KEY_EMAIL);
-		$this -> addKey(self::$KEY_PHONE);
-		$this -> addKey(self::$KEY_CELL);
-		$this -> addKey(self::$KEY_FAX);
-		$this -> addKey(self::$KEY_WEBSITE);
+		return $this -> getSQLTable();
 	}
 	
 	public function setEmail($email) {

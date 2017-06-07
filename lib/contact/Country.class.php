@@ -7,12 +7,13 @@ requireClass('lib/db/DBEnabled');
 
 class Country extends DBEnabled {
 	
-	public static $TABLE			= 'countries';
+	public static $TABLE				= 'countries';
+	public static $TABLE_ALIAS			= 'cou';
 	
-	public static $KEY_COUNTRY		= 'country';
-	public static $KEY_CODE			= 'code';
-	public static $KEY_CODE_3		= 'code_3';
-	public static $KEY_NUMBER		= 'number';
+	public static $KEY_COUNTRY			= 'country';
+	public static $KEY_CODE				= 'code';
+	public static $KEY_CODE_3			= 'code_3';
+	public static $KEY_NUMBER			= 'number';
 	
 	private $iso3166_1Country;
 	private $iso3166_1Code;
@@ -28,15 +29,24 @@ class Country extends DBEnabled {
 		$this -> setCode($iso3166_1Code);
 		$this -> setCode3Letters($iso3166_1Code3Letters);
 		$this -> setNumber($iso3166_1Number);
-		
-		$this -> setTable(self::$TABLE);
-		$this -> setPrimaryKey(self::$KEY_ID);
-		$this -> addKey(self::$KEY_COUNTRY);
-		$this -> addKey(self::$KEY_CODE);
-		$this -> addKey(self::$KEY_CODE_3);
-		$this -> addKey(self::$KEY_NUMBER);
 	}
 	public function __clone() {}
+	
+	public static function getTable() {
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			$table -> parseColumn(self::$KEY_COUNTRY, ColumnType::getVarchar());
+			$table -> parseColumn(self::$KEY_CODE, ColumnType::getChar());
+			$table -> parseColumn(self::$KEY_CODE_3, ColumnType::getChar());
+			$table -> parseColumn(self::$KEY_NUMBER, ColumnType::getChar());
+			
+			$this -> setSQLTable($table);
+		}
+		
+		return $this -> getSQLTable();
+	}
 	
 	public function setCountry($iso3166_1Country) {
 		$this -> iso3166_1Country = $iso3166_1Country;

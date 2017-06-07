@@ -10,6 +10,17 @@ requireClass('lib/contact/Song');
 
 class Registration extends DBEnabled {
 	
+	public static $TABLE			= 'registrations';
+	public static $TABLE_ALIAS		= 'reg';
+	
+	public static $KEY_PERSON		= 'person';
+	public static $KEY_DEPARTMENT	= 'department';
+	public static $KEY_ATTENDANCE	= 'attendance';
+	public static $KEY_SONG1		= 'song1';
+	public static $KEY_SONG2		= 'song2';
+	public static $KEY_SONG3		= 'song3';
+	public static $KEY_REMARKS		= 'remarks';
+	
 	private $contact = null;
 	private $department = null;
 	private $attendance = null;
@@ -36,6 +47,43 @@ class Registration extends DBEnabled {
 		$this -> setSong2($song2);
 		$this -> setSong3($song3);
 		$this -> setRemarks($remarks);
+	}
+	public function __clone() {}
+	
+	public static function getTable() {
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			$table -> parseForeignKey(
+					self::$KEY_PERSON, Person::getTable());
+			$table -> parseForeignKey(
+					self::$KEY_DEPARTMENT, Department::getTable());
+			$table -> parseColumn(self::$KEY_ATTENDANCE);
+			$table -> parseForeignKey(
+					self::$KEY_SONG1, Song::getTable());
+			$table -> parseForeignKey(
+					self::$KEY_SONG2, Song::getTable());
+			$table -> parseForeignKey(
+					self::$KEY_SONG3, Song::getTable());
+			$table -> parseColumn(self::$KEY_REMARKS, ColumnType::getText());
+			
+			$this -> setSQLTable($table);
+		}
+		
+		return $this -> getSQLTable();
+	}
+	
+	public static function getTable() {
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			
+			$this -> setSQLTable($table);
+		}
+		
+		return $this -> getSQLTable();
 	}
 	
 	public function setContact(Person $contact) {

@@ -7,15 +7,16 @@ requireClass('lib/contact/Country');
 
 class Address extends DBEnabled {
 	
-	public static $TABLE			= 'addresses';
+	public static $TABLE				= 'addresses';
+	public static $TABLE_ALIAS			= 'add';
 	
-	public static $KEY_ENABLE		= 'enable_address';
-	public static $KEY_STREET		= 'street';
-	public static $KEY_NUMBER		= 'number';
-	public static $KEY_BOX			= 'box';
-	public static $KEY_POSTAL_CODE	= 'postal_code';
-	public static $KEY_CITY			= 'city';
-	public static $KEY_COUNTRY		= 'country';
+	public static $KEY_ENABLE			= 'enable_address';
+	public static $KEY_STREET			= 'street';
+	public static $KEY_NUMBER			= 'number';
+	public static $KEY_BOX				= 'box';
+	public static $KEY_POSTAL_CODE		= 'postal_code';
+	public static $KEY_CITY				= 'city';
+	public static $KEY_COUNTRY			= 'country';
 	
 	private $street = '';
 	private $number = '';
@@ -40,17 +41,21 @@ class Address extends DBEnabled {
 	public function __clone() {}
 	
 	public static function getTable() {
-		$table = new Table(self::$TABLE);
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			$table -> parseColumn(self::$KEY_STREET);
+			$table -> parseColumn(self::$KEY_NUMBER, ColumnType::getChar());
+			$table -> parseColumn(self::$KEY_BOX, ColumnType::getChar());
+			$table -> parseColumn(self::$KEY_POSTAL_CODE, ColumnType::getChar());
+			$table -> parseColumn(self::$KEY_CITY);
+			$table -> parseForeignKey(self::$KEY_COUNTRY, Country::getTable());
+			
+			$this -> setSQLTable($table);
+		}
 		
-		$table -> parsePrimaryKey(self::$KEY_ID);
-		$table -> parseColumn(self::$KEY_STREET);
-		$table -> parseColumn(self::$KEY_NUMBER, ColumnType::getChar());
-		$table -> parseColumn(self::$KEY_BOX, ColumnType::getChar());
-		$table -> parseColumn(self::$KEY_POSTAL_CODE, ColumnType::getChar());
-		$table -> parseColumn(self::$KEY_CITY);
-		$table -> parseForeignKey(self::$KEY_COUNTRY, Country::getTable());
-		
-		$this -> setTable($table);
+		return $this -> getSQLTable();
 	}
 	
 	public function setStreet($street) {

@@ -8,6 +8,7 @@ requireClass('lib/contact/Contact');
 class Organisation extends Contact {
 	
 	public static $TABLE				= 'organisations';
+	public static $TABLE_ALIAS			= 'org';
 	
 	public static $KEY_ORGANISATION		= 'organisation';
 	public static $KEY_FULL_NAME		= 'full_name';
@@ -28,8 +29,26 @@ class Organisation extends Contact {
 		$this -> setVATNumber($vatNumber);
 		$this -> setAddress($address);
 		$this -> setContactDetails($contactDetails);
+	}
+	public function __clone() {}
+	
+	public static function getTable() {
+		if (!$this -> hasSQLTable()) {
+			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
+			
+			$table -> parsePrimaryKey(self::$KEY_ID);
+			$table -> parseColumn(self::$KEY_ORGANISATION);
+			$table -> parseColumn(self::$KEY_FULL_NAME);
+			$table -> parseColumn(self::$KEY_VAT_NUMBER, ColumnType::getChar());
+			$table -> parseForeignKey(
+					self::$KEY_ADDRESS, Address::getTable());
+			$table -> parseForeignKey(
+					self::$KEY_CONTACT_DETAILS, ContactDetails::getTable());
+			
+			$this -> setSQLTable($table);
+		}
 		
-		$this -> setTable(self::$TABLE);
+		return $this -> getSQLTable();
 	}
 	
 	public function setOrganisation($organisation) {
