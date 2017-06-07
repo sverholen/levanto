@@ -8,6 +8,14 @@ requireClass('lib/sql/Key');
 requireClass('lib/sql/ForeignKey');
 
 /**
+ * Main entry point for the SQL abstraction layer.
+ * 
+ * Allows you to do something like the following code, with the abstraction
+ * layer responsible for generating queries.
+ * 
+ * Resource intensive, not meant for production use !
+ * 
+ * CODE:
  * $tableCountries = new Table('countries');
  * $tableCountries -> parsePrimaryKey('id');
  * $tableCountries -> parseColumn('country', ColumnType::VARCHAR);
