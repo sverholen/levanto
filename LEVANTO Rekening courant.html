@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html lang="nl">
+	<head>
+		<meta charset="utf-8">		
+
+		<title>LEVANTO Rekening courant</title>		
+
+		<meta name="description" content="LEVANTO Rekening courant">
+		<meta name="author" content="Stijn Verholen/metastable (sverholen@gmail.com)">		
+
+		<link type="text/css" rel="stylesheet" href="css/reset.css">
+		<link type="text/css" rel="stylesheet" href="css/levanto.css">
+		
+		<!--[if lt IE 9]>
+			<script type="text/javascript" src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+	</head>	
+
+	<body>
+		<h1>Rekeningen courant</h1>		
+
+		<form action="index.php" method="post" enctype="multipart/form-data">
+			<h2 class="formheader">Voeg een organisatie toe</h2>
+			<fieldset>
+				<legend>Organisatie</legend>
+				<div class="formrow">
+				<label for="organisation">Organisatie</label>
+				<input id="organisation" name="organisation" value="" type="text" />
+				</div>
+				<div class="formrow">
+				<label for="full_name">Volledige naam</label>
+				<input id="full_name" name="full_name" value="" type="text" />
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Contact</legend>
+				<div class="formrow">
+				<label for="email">E-mail</label>
+				<input id="email" name="email" value="" type="text" />
+				</div>
+				<div class="formrow">
+				<label for="phone">Telefoon</label>
+				<input id="phone" name="phone" value="" type="text" />
+				<label for="cell">GSM</label>
+				<input id="cell" name="cell" value="" type="text" />
+				<label for="fax">Fax</label>
+				<input id="fax" name="fax" value="" type="text" />
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Adres</legend>
+				<div class="formrow">
+				<label for="street">Straat</label>
+				<input id="street" name="street" value="" type="text" />
+				<label for="number">Nummer</label>
+				<input id="number" name="number" value="" type="text" />
+				<label for="box">Bus</label>
+				<input id="box" name="box" value="" type="text" />
+				</div>
+				<div class="formrow">
+				<label for="postal_code">Postcode</label>
+				<input id="postal_code" name="postal_code" value="" type="text" />
+				<label for="city">Gemeente</label>
+				<input id="city" name="city" value="" type="text" />
+				</div>
+			</fieldset>
+				<label for="submit">&nbsp;</label>
+				<input id="submit" name="submit" value="Verzenden" type="submit" />
+			<input id="formid" name="formid" value="organisation_create" type="hidden" />
+		</form>
+	</body>
+</html>
