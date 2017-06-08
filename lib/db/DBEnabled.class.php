@@ -3,32 +3,57 @@
 /* APPLICATION CHECK **********************************************************/
 defined('APPLICATION_KEY') or die('Invalid application');
 
+requireClass('lib/db/DBIterable');
+requireClass('lib/db/CRUD');
 requireClass('lib/sql/Table');
 
-abstract class DBEnabled implements DBKeyIterable {
+abstract class DBEnabled implements DBIterable, CRUD {
 	
-	public static $KEY_ID						= 'id';
+	public static $KEY_ID				= 'id';
 	
 	private $id = 0;
-	private $table = null;
 	
-	public abstract function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array());
 	public abstract function toString();
 	
-	public abstract function create();
-	public abstract function read();
-	public abstract function update();
-	public abstract function delete();
+	//public abstract function create();
+	//public abstract function read();
+	//public abstract function update();
+	//public abstract function delete();
 	
-	protected function setSQLTable(Table $table) {
-		$this -> table = $table;
+	public static function selectAll() {
+		return self::select();
 	}
-	protected function getSQLTable() {
-		return $this -> table;
+	
+	public static function select() {
+		$objects = array();
+		
+		$statement = getDB() -> prepare(static::getTable() -> selectQuery());
+		$result = DBConnection::query($statement);
+		
+		if (!$result)
+			return $objects;
+		
+		while ($row = $statement -> fetch(PDO::FETCH_ASSOC)) {
+			$objects[] = static::load($row);
+		}
+		
+		return $objects;
 	}
-	protected function hasSQLTable() {
-		return $this -> getSQLTable() != null;
+	
+	public static function create(array $data = array()) {
+		$statement = getDB() -> prepare(
+				static::getTable() -> insertQuery($data));
+		$result = DBConnection::query($statement);
+		
+		if ($result) {
+			$object = static::load($data);
+			
+			$object -> setID(getDB() -> lastInsertId());
+			
+			return $object;
+		}
+		
+		return null;
 	}
 	
 	protected function setPrimaryKey($primaryKey) {
@@ -102,101 +127,8 @@ abstract class DBEnabled implements DBKeyIterable {
 				$alias, $idAlias, $includeForeignKeys, $includeID);
 	}
 	*/
-	protected static function quoteTable($table, $alias = '') {
-		return '`' . $table . '`' . ($alias ? ' AS `' . $alias . '`' : '');
-	}
-	
-	protected static function quoteKey(
-			$key, $keyAlias = '', $tableAlias = '', $useAlias = false) {
-		if ($useAlias && !$alias) $alias = $key;
-		
-		$quoted = '`' . $key . '`';
-		
-		if ($table)
-			$quoted = '`' . $table . '`.' . $quoted;
-		
-		if (!$useAlias) return $quoted;
-		
-		return $quoted . ' AS `' . $alias . '`';
-	}
-	protected static function quoteForeignKey($key, $table) {
-		$quoted = '`' . $key . '`';
-		
-		if ($table)
-			$quoted = '`' . $table . '`.' . $quoted;
-			
-		return $quoted;
-	}
-	/**
-	 * 
-	 * @param array $keys
-	 * @param string $useAlias
-	 * @return string
-	 */
-	protected static function quoteKeys(array $keys, $useAlias = false) {
-		$query = '';
-		$count = sizeof($keys);
-		
-		for ($i = 0; $i < $count; $i++) {
-			$size = sizeof($keys[$i]);
-			
-			if ($size == 1) {
-				$query .= self::quoteKey(
-						$keys[$i][0], '', '', $useAlias);
-			}
-			else if ($size == 2) {
-				$query .= self::quoteKey(
-						$keys[$i][0], $keys[$i][1], '', $useAlias);
-			}
-			else if ($size == 3) {
-				$query .= self::quoteKey(
-						$keys[$i][0], $keys[$i][1], $keys[$i][2], $useAlias);
-			}
-			else {
-				continue;
-			}
-			
-			if ($i < $count - 1)
-				$query .= ', ';
-		}
-		
-		return $query;
-	}
-	
-	protected function quoteValue($value) {
-		return '"' . $value . '"';
-	}
 }
 
-interface DBKeyIterable {
-	
-	/**
-	 * 
-	 * @param string $keyAlias The alias of the key (`id` AS `country`.`id`)
-	 * @param string $tableAlias The table alias (FROM `table` AS `t`)
-	 * @param string $includeForeignKeys Include the keys of the foreign table
-	 * in the output array (set to false for output intended for INSERT
-	 * statements and to true for output intended for SELECT statements).
-	 * @param string $includeID Include the table id in the output array (set 
-	 * to false for output intended for INSERT statements and to true for
-	 * output intended for SELECT statements).
-	 */
-	/*
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false);
-	*/
-	public static function getTable();
-	
-	/*
-	public static function insertKeys();
-	public static function selectKeys();
-	
-	public static function getIDAlias();
-	public static function getTableAlias();
-	*/
-}
+
 
 ?>

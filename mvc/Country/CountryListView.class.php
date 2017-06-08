@@ -20,14 +20,18 @@ class CountryListView extends View {
 		$objects = $this -> getModel() -> loadAll();
 		$size = sizeof($objects);
 		
-											print HTML::tab();
+		print HTML::tab();
 		print HTML::form('index.php');
-											print HTML::tab();
+		print HTML::tab();
 		print HTML::header('Landen', 'formheader');
 		
 		for ($i = 0; $i < $size; $i++) {
-			print '<div>' . $objects[$i] -> toString() . '</div>';
+			print HTML::line('<div>' . $objects[$i] -> toString() . '</div>');
 		}
+		
+		print HTML::untab();
+		print HTML::line('</form>');
+		print HTML::untab();
 	}
 }
 

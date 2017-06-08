@@ -10,6 +10,12 @@ requireClass('lib/contact/Song');
 
 class Registration extends DBEnabled {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE			= 'registrations';
 	public static $TABLE_ALIAS		= 'reg';
 	
@@ -51,7 +57,7 @@ class Registration extends DBEnabled {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -68,10 +74,10 @@ class Registration extends DBEnabled {
 					self::$KEY_SONG3, Song::getTable());
 			$table -> parseColumn(self::$KEY_REMARKS, ColumnType::getText());
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public static function getTable() {
@@ -145,11 +151,6 @@ class Registration extends DBEnabled {
 	}
 	public function getRemarks() {
 		return $this -> remarks;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		
 	}
 }
 

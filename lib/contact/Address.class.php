@@ -7,6 +7,12 @@ requireClass('lib/contact/Country');
 
 class Address extends DBEnabled {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'addresses';
 	public static $TABLE_ALIAS			= 'add';
 	
@@ -41,7 +47,7 @@ class Address extends DBEnabled {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -52,10 +58,10 @@ class Address extends DBEnabled {
 			$table -> parseColumn(self::$KEY_CITY);
 			$table -> parseForeignKey(self::$KEY_COUNTRY, Country::getTable());
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setStreet($street) {
@@ -100,70 +106,20 @@ class Address extends DBEnabled {
 		return $this -> country;
 	}
 	
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false) {
-		$keys = array();
-		
-		if ($includeID)
-			$keys = array_merge($keys, array(self::$KEY_ID, $alias, $idAlias));
-			
-		$keys = array_merge($keys, array(
-				array(self::$KEY_STREET, $alias),
-				array(self::$KEY_NUMBER, $alias),
-				array(self::$KEY_BOX, $alias),
-				array(self::$KEY_POSTAL_CODE, $alias),
-				array(self::$KEY_CITY, $alias),
-				array(self::$KEY_COUNTRY, 'country_fk')));
-		
-		if ($includeForeignKeys)
-			$keys = array_merge($keys, Country::listKeys(
-					self::$ALIAS_COUNTRIES, 'country_id',
-					$includeForeignKeys, $includeID));
-		
-		return $keys;
-	}
-	public static function insertKeys() {
-		
-	}
-	public static function selectKeys(
-			$prefix = '', $includeForeignKeys = false) {
-		
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		$this -> checkID($data, $idAlias);
-		
-		$this -> setStreet(
-				$this -> checkKey($data, $prefix . self::$KEY_STREET, ''));
-		$this -> setNumber(
-				$this -> checkKey($data, $prefix . self::$KEY_NUMBER, ''));
-		$this -> setBox(
-				$this -> checkKey($data, $prefix . self::$KEY_BOX, ''));
-		$this -> setPostalCode(
-				$this -> checkKey($data, $prefix . self::$KEY_POSTAL_CODE, ''));
-		$this -> setCity(
-				$this -> checkKey($data, $prefix . self::$KEY_CITY, ''));
-		
-		$country = new Country();
-		$country -> load($data, $idAlias, $prefix, $files);
-		
-		if (!$country -> hasID())
-			$country -> load(
-					$data, $prefix . self::$KEY_COUNTRY, $prefix, $files);
-		
-		$this -> setCountry($country);
-	}
-	
 	public function toString() {
 		return $this -> getStreet() . ' ' . $this -> getNumber() . ' ' .
 				$this -> getBox() . ' ' . $this -> getPostalCode() . ' ' .
 				$this -> getCity() . ' ' . $this -> getCountry();
 	}
 	
+	public static function load(array $pdoAssociativeArray = array()) {
+		$object = new Address();
+		
+		print_r($pdoAssociativeArray);exit;
+		return $object;
+	}
+	
+	/*
 	public function create() {
 		$this -> getCountry() -> create();
 		
@@ -202,4 +158,5 @@ class Address extends DBEnabled {
 		if (!$this -> hasID())
 			return false;
 	}
+	*/
 }

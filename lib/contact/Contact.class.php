@@ -44,6 +44,13 @@ abstract class Contact extends DBEnabled {
 		return $this -> accounts;
 	}
 	
+	public static function load(array $pdoAssociativeArray = array()) {
+		$object = new Country();
+		
+		print_r($pdoAssociativeArray);exit;
+		return $object;
+	}
+	/*
 	public function load(
 			array $data, $idAlias = '', $prefix = '', array $files = array()) {
 		$this -> checkID($data, $idAlias);
@@ -58,6 +65,7 @@ abstract class Contact extends DBEnabled {
 		
 		$this -> setContactDetails($contactDetails);
 	}
+	*/
 	
 	public function toString() {
 		return $this ->getContactDetails() -> toString();

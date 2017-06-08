@@ -9,6 +9,12 @@ requireClass('lib/contact/Person');
 
 class Customer extends Contact {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'customers';
 	public static $TABLE_ALIAS			= 'cus';
 	
@@ -39,7 +45,7 @@ class Customer extends Contact {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -53,10 +59,10 @@ class Customer extends Contact {
 			$table -> parseForeignKey(
 					self::$KEY_ORGANISATION, Organisation::getTable());
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setFirstName($firstName) {
@@ -85,44 +91,6 @@ class Customer extends Contact {
 	}
 	public function getOrganisation() {
 		return $this -> organisation;
-	}
-	
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false) {
-		$keys = array_merge(
-				Person::listKeys(
-					$alias, $idAlias, $includeForeignKeys, $includeID),
-				array(self::$KEY_FUNCTION, $alias),
-				array(self::$KEY_ORGANISATION, 'organisation_fk'));
-		
-		if ($includeForeignKeys)
-			$keys = array_merge($keys, CustomerOrganisation::listKeys(
-					self::$ALIAS_CUSTOMER_ORGANISATIONS, 'organisation_id',
-					$includeForeignKeys, $includeID));
-		
-		return $keys;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		$this -> checkID($data, $idAlias);
-		
-		$this -> setFirstName(
-				$this -> checkKey($data, $prefix . self::$KEY_FIRST_NAME, ''));
-		$this -> setLastName(
-				$this -> checkKey($data, $prefix . self::$KEY_LAST_NAME, ''));
-		$this -> setFunction(
-				$this -> checkKey($data, $prefix . self::$KEY_FUNCTION, ''));
-		
-		$organisation = new CustomerOrganisation();
-		$organisation -> load($data, $idAlias, $prefix, $files);
-		
-		$this -> setOrganisation($organisation);
-		
-		parent::load($data, $idAlias, $prefix, $files);
 	}
 	
 	public function toString() {

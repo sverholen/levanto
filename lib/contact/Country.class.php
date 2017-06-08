@@ -7,6 +7,12 @@ requireClass('lib/db/DBEnabled');
 
 class Country extends DBEnabled {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'countries';
 	public static $TABLE_ALIAS			= 'cou';
 	
@@ -33,7 +39,7 @@ class Country extends DBEnabled {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -42,10 +48,10 @@ class Country extends DBEnabled {
 			$table -> parseColumn(self::$KEY_CODE_3, ColumnType::getChar());
 			$table -> parseColumn(self::$KEY_NUMBER, ColumnType::getChar());
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setCountry($iso3166_1Country) {
@@ -76,47 +82,25 @@ class Country extends DBEnabled {
 		return $this -> iso3166_1Number;
 	}
 	
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false) {
-		$keys = array();
-		
-		if ($includeID)
-			$keys = array_merge($keys, array(self::$KEY_ID, $alias, $idAlias));
-		
-		$keys = array_merge($keys, array(
-				array(Country::$KEY_COUNTRY, $alias),
-				array(Country::$KEY_CODE, $alias),
-				array(Country::$KEY_CODE_3, $alias),
-				array(Country::$KEY_NUMBER, $alias)));
-		
-		return $keys;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		$this -> checkID($data, $idAlias);
-		print 'ID: ' . $this -> getID() . "\r\n";print ($this -> hasID() ? 'HAS ID' : 'DOES NOT HAVE ID') . "\r\n";
-		$this -> setCountry(
-				$this -> checkKey(
-						$data, $prefix . self::$KEY_COUNTRY, ''));
-		$this -> setCode(
-				strtolower($this -> checkKey(
-						$data, $prefix . self::$KEY_CODE, '')));
-		$this -> setCode3Letters(
-				strtolower($this -> checkKey(
-						$data, $prefix . self::$KEY_CODE_3, '')));
-		$this -> setNumber(
-				$this -> checkKey(
-						$data, $prefix . self::$KEY_NUMBER, ''));
-	}
-	
 	public function toString() {
 		return $this -> getCountry() . ' (' . $this -> getCode() . ')';
 	}
 	
+	public static function load(array $data = array()) {
+		$object = new Country();
+		
+		$object -> setCountry($data[self::$KEY_COUNTRY]);
+		$object -> setCode($data[self::$KEY_CODE]);
+		$object -> setCode3Letters($data[self::$KEY_CODE_3]);
+		$object -> setNumber($data[self::$KEY_NUMBER]);
+		
+		if (isset($data[self::$KEY_ID]))
+			$object -> setID($data[self::$KEY_ID]);
+		
+		return $object;
+	}
+	
+	/*
 	public function create() {
 		if ($this -> hasID()) return true;
 		
@@ -149,30 +133,5 @@ class Country extends DBEnabled {
 	
 	public function delete() {
 		
-	}
-	
-	public static function select() {
-		$objects = array();
-		
-		$keys = self::listKeys(self::$ALIAS_COUNTRIES, '', true, true);
-		
-		$query  = 'SELECT ' . self::quoteKeys($keys);
-		$query .= 'FROM ';
-		$query .= self::quoteTable(self::$TABLE, self::$ALIAS_COUNTRIES);
-		
-		$statement = getDB() -> prepare($query);
-		$result = DBConnection::query($statement);
-		
-		if (!$result)
-			return $objects;
-		
-		while ($row = $statement -> fetch(PDO::FETCH_ASSOC)) {
-			$object = new Country();
-			$object -> load($row);
-			
-			$objects[] = $object;
-		}
-		
-		return $objects;
-	}
+	}*/
 }

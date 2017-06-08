@@ -59,8 +59,20 @@ class Table extends SQLEntity {
 	public function addColumn(Column $column) {
 		$this -> columns[] = $column;
 	}
-	public function getColumns() {
-		return $this -> columns;
+	public function getColumns($includePrimaryKeys = true) {
+		if ($includePrimaryKeys)
+			return $this -> columns;
+		
+		$columns = array();
+		$size = sizeof($this -> columns);
+		$name = $this -> getPrimaryKey() -> getColumn() -> getName();
+		
+		for ($i = 0; $i < $size; $i++) {
+			if ($this -> columns[$i] != $name)
+				$columns[] = $this -> columns[$i];
+		}
+		
+		return $columns;
 	}
 	
 	public function setPrimaryKey(Key $primaryKey = null) {
@@ -71,6 +83,9 @@ class Table extends SQLEntity {
 	}
 	public function hasPrimaryKey() {
 		return $this -> getPrimaryKey();
+	}
+	public function isPrimaryKey(Column $column) {
+		return $this -> getPrimaryKey() -> getColumn() == $column;
 	}
 	
 	public function setKeys(array $keys = array()) {
@@ -165,6 +180,124 @@ class Table extends SQLEntity {
 		$output .= ')';
 		
 		return $output;
+	}
+	
+	public static function quoteTable($table, $alias = '') {
+		return '`' . $table . '`' .
+				($alias && $alias != $table ? ' AS `' . $alias . '`' : '');
+	}
+	public static function quoteColumn($column, $tableAlias = '', $alias = '') {
+		$quoted = '`' . $column . '`';
+		
+		if ($tableAlias)
+			$quoted = '`' . $table . '`.' . $quoted;
+		
+		if ($alias)
+			$quoted = $quoted . ' AS `' . $alias . '`';
+		
+		return $quoted;
+	}
+	private static function quoteColumnList(array $columns = array()) {
+		$size = sizeof($columns);
+		$quoted = '';
+		
+		for ($i = 0; $i < $size; $i++) {
+			$quoted .= self::quoteColumn($columns[$i] -> getName());
+			
+			if ($i < $size -1)
+				$quoted .= ', ';
+		}
+		
+		return $quoted;
+	}
+	public static function quoteForeignKey($key, $table) {
+		$quoted = '`' . $key . '`';
+		
+		if ($table)
+			$quoted = '`' . $table . '`.' . $quoted;
+			
+			return $quoted;
+	}
+	/**
+	 *
+	 * @param array $keys
+	 * @param string $useAlias
+	 * @return string
+	 */
+	public static function quoteKeys(array $keys, $useAlias = false) {
+		$query = '';
+		$count = sizeof($keys);
+		
+		for ($i = 0; $i < $count; $i++) {
+			$size = sizeof($keys[$i]);
+			
+			if ($size == 1) {
+				$query .= self::quoteKey(
+						$keys[$i][0], '', '', $useAlias);
+			}
+			else if ($size == 2) {
+				$query .= self::quoteKey(
+						$keys[$i][0], $keys[$i][1], '', $useAlias);
+			}
+			else if ($size == 3) {
+				$query .= self::quoteKey(
+						$keys[$i][0], $keys[$i][1], $keys[$i][2], $useAlias);
+			}
+			else {
+				continue;
+			}
+			
+			if ($i < $count - 1)
+				$query .= ', ';
+		}
+		
+		return $query;
+	}
+	
+	public function quoteValue($value) {
+		return '"' . $value . '"';
+	}
+	
+	public function selectQuery() {
+		$query  = 'SELECT ';
+		$query .= self::quoteColumnList($this -> getColumns());
+		$query .= ' FROM ' . self::quoteTable($this -> getName());
+		
+		return $query;
+	}
+	
+	public function insertQuery(array $data = array()) {
+		$size = sizeof($this -> getColumns());
+		$keys = array_keys($data);
+		
+		$query  = 'INSERT INTO ';
+		$query .= self::quoteTable($this -> getName()) . ' (';
+		$query .= self::quoteColumnList($this -> getColumns(false));
+		$query .= ') VALUES (';
+		
+		for ($i = 0; $i < $size; $i++) {
+			if ($this -> isPrimaryKey($this -> getColumns()[$i]))
+				continue;
+			
+			for ($j = 0; $j < $size; $j++) {
+				if ($this -> getColumns()[$i] -> getName() == $keys[$j]) {
+					if ($this -> getColumns()[$i] -> getType() -> isNumeric())
+						$query .= $data[$keys[$j]];
+					else
+						$query .= self::quoteValue($data[$keys[$j]]);
+					
+					break 1;
+				}
+				// @TODO: shouldn't be here, throw error
+			}
+			
+			if ($i < $size - 1)
+				$query .= ', ';
+		}
+		
+		$query .= ')';
+		
+		return $query;
 	}
 }
 

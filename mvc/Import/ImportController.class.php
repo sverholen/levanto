@@ -85,12 +85,7 @@ class ImportController extends Controller {
 	private function processCountry(array $data) {
 		requireClass('lib/contact/Country');
 		
-		$object = new Country();
-		$object -> load($data);
-		
-		$object -> create();
-		
-		return $object;
+		return Country::create($data);
 	}
 	
 	private function processLevanto(array $data) {

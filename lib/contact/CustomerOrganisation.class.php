@@ -8,6 +8,12 @@ requireClass('lib/contact/Organisation');
 
 class CustomerOrganisation extends Contact {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'customer_organisations';
 	public static $TABLE_ALIAS			= 'cor';
 	
@@ -34,7 +40,7 @@ class CustomerOrganisation extends Contact {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -46,10 +52,10 @@ class CustomerOrganisation extends Contact {
 			$table -> parseForeignKey(
 					self::$KEY_CONTACT_DETAILS, ContactDetails::getTable());
 			
-			$table -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setOrganisation($organisation) {
@@ -75,34 +81,6 @@ class CustomerOrganisation extends Contact {
 	}
 	public function getVATNumber() {
 		return $this -> vatNumber;
-	}
-	
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false) {
-		$keys = Organisation::listKeys(
-				$alias, $idAlias, $includeForeignKeys, $includeID);
-		
-		return $keys;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		$this -> checkID($data, $idAlias);
-		
-		$this -> setOrganisation(
-				$this -> checkKey(
-						$data, $prefix . self::$KEY_ORGANISATION, ''));
-		$this -> setFullName(
-				$this -> checkKey(
-						$data, $prefix . self::$KEY_FULL_NAME, ''));
-		$this -> setVATNumber(
-				$this -> checkKey(
-						$data, $prefix . self::$KEY_VAT_NUMBER, ''));
-		
-		parent::load($data, $idAlias, $prefix, $files);
 	}
 	
 	public function toString() {

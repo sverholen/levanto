@@ -7,6 +7,12 @@ requireClass('lib/db/DBEnabled');
 
 class Songs extends DBEnabled {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'songs';
 	public static $TABLE_ALIAS			= 'son';
 	
@@ -25,7 +31,7 @@ class Songs extends DBEnabled {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -33,10 +39,10 @@ class Songs extends DBEnabled {
 			$table -> parseColumn(self::$KEY_ARTIST);
 			$table -> parseColumn(self::$KEY_FILENAME);
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setTitle($title = '') {

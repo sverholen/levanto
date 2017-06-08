@@ -8,6 +8,12 @@ requireClass('lib/contact/Organisation');
 
 class CurrentAccount extends DBEnabled {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'current_accounts';
 	public static $TABLE_ALIAS			= 'cac';
 	
@@ -26,7 +32,7 @@ class CurrentAccount extends DBEnabled {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -34,10 +40,10 @@ class CurrentAccount extends DBEnabled {
 			$table -> parseForeignKey(
 					self::$KEY_ORGANISATION, Organisation::getTable());
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setName($name) {
@@ -52,41 +58,6 @@ class CurrentAccount extends DBEnabled {
 	}
 	public function getOrganisation() {
 		return $this -> organisation;
-	}
-	
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false) {
-		$keys = array();
-		
-		if ($includeID)
-			$keys = array_merge($keys, array(self::$KEY_ID, $alias, $idAlias));
-			
-		$keys = array_merge($keys, array(
-				array(self::$KEY_NAME, $alias),
-				array(self::$KEY_ORGANISATION, $alias, 'organisation_fk')));
-		
-		if ($includeForeignKeys)
-			$keys = array_merge($keys, Organisation::listKeys(
-				self::$ALIAS_ORGANISATIONS, 'organisation_id',
-				$includeForeignKeys, $includeID));
-		
-		return $keys;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		$this -> checkID($data, $idAlias);
-		
-		$this -> setName(
-				$this -> checkKey($data, self::$KEY_NAME, ''));
-		
-		$organisation = new Organisation();
-		$organisation -> load($data, $idAlias, $prefix, $files);
-		
-		$this -> setOrganisation($organisation);
 	}
 	
 	public function toString() {

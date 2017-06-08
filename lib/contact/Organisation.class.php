@@ -7,6 +7,12 @@ requireClass('lib/contact/Contact');
 
 class Organisation extends Contact {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'organisations';
 	public static $TABLE_ALIAS			= 'org';
 	
@@ -33,7 +39,7 @@ class Organisation extends Contact {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -45,10 +51,10 @@ class Organisation extends Contact {
 			$table -> parseForeignKey(
 					self::$KEY_CONTACT_DETAILS, ContactDetails::getTable());
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setOrganisation($organisation) {
@@ -76,56 +82,18 @@ class Organisation extends Contact {
 		return $this -> vatNumber;
 	}
 	
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false) {
-		$keys = array();
-		
-		if ($includeID)
-			$keys = array_merge($keys, array(self::$KEY_ID, $alias, $idAlias));
-		
-		$keys = array_merge($keys, array(
-				array(self::$KEY_ORGANISATION, $alias),
-				array(self::$KEY_FULL_NAME, $alias),
-				array(self::$KEY_VAT_NUMBER, $alias),
-				array(self::$KEY_ADDRESS, $alias, 'address_fk'),
-				array(self::$KEY_CONTACT_DETAILS, $alias, 'contact_fk')));
-		
-		if ($includeForeignKeys) {
-			$keys = array_merge($keys, Address::getKeys(
-				self::$ALIAS_ADDRESSES, 'address_id',
-					$includeForeignKeys, $includeID));
-			$keys = array_merge($keys, ContactDetails::getKeys(
-				self::$ALIAS_CONTACT_DETAILS, 'contact_details_id',
-					$includeForeignKeys, $includeID));
-		}
-		
-		return $keys;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		$this -> checkID($data, $idAlias);
-		
-		$this -> setOrganisation(
-				$this -> checkKey(
-						$data, $prefix . self::$KEY_ORGANISATION, ''));
-		$this -> setFullName(
-				$this -> checkKey(
-						$data, $prefix . self::$KEY_FULL_NAME, ''));
-		$this -> setVATNumber(
-				$this -> checkKey(
-						$data, $prefix . self::$KEY_VAT_NUMBER, ''));
-		
-		parent::load($data, $idAlias, $prefix, $files);
-	}
-	
 	public function toString() {
 		return $this -> getOrganisation() . ' (' . $this -> getFullName() . ')';
 	}
 	
+	public static function load(array $pdoAssociativeArray = array()) {
+		$object = new Country();
+		
+		print_r($pdoAssociativeArray);exit;
+		return $object;
+	}
+	
+	/*
 	public function create() {
 		$this -> getAddress() -> create();
 		$this -> getContactDetails() -> create();
@@ -222,5 +190,6 @@ class Organisation extends Contact {
 			
 		return $objects;
 	}
+	*/
 }
 ?>

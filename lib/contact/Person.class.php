@@ -7,6 +7,12 @@ requireClass('lib/contact/Contact');
 
 class Person extends Contact {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'people';
 	public static $TABLE_ALIAS			= 'peo';
 	
@@ -29,7 +35,7 @@ class Person extends Contact {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -40,10 +46,10 @@ class Person extends Contact {
 			$table -> parseForeingKey(
 					self::$KEY_CONTACT_DETAILS, ContactDetails::getTable());
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setFirstName($firstName) {
@@ -58,47 +64,6 @@ class Person extends Contact {
 	}
 	public function getLastName() {
 		return $this -> lastName;
-	}
-	
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false) {
-		$keys = array();
-		
-		if ($includeID)
-			$keys = array_merge($keys, array(self::$KEY_ID, $alias, $idAlias));
-		
-		$keys = array_merge($keys, array(
-				array(self::$KEY_FIRST_NAME, $alias),
-				array(self::$KEY_LAST_NAME, $alias),
-				array(self::$KEY_ADDRESS, $alias, 'address_fk'),
-				array(self::$KEY_CONTACT_DETAILS, $alias, 'contact_fk')));
-		
-		if ($includeForeignKeys) {
-			$keys = array_merge($keys, Address::listKeys(
-				self::$ALIAS_ADDRESSES, 'address_id',
-				$includeForeignKeys, $includeID));
-			$keys = array_merge($keys,
-				ContactDetails::listKeys(
-				self::$ALIAS_CONTACT_DETAILS, 'contact_details_id',
-				$includeForeignKeys, $includeID));
-		}
-		
-		return $keys;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		$this -> checkID($data, $idAlias);
-		
-		$this -> setFirstName(
-				$this -> checkKey($data, $prefix . self::$KEY_FIRST_NAME, ''));
-		$this -> setLastName(
-				$this -> checkKey($data, $prefix . self::$KEY_LAST_NAME, ''));
-		
-		parent::load($data, $idAlias, $prefix, $files);
 	}
 	
 	public function toString() {

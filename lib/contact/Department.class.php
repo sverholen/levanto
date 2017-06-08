@@ -7,6 +7,12 @@ requireClass('lib/contact/Contact');
 
 class Department extends Contact {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'departments';
 	public static $TABLE_ALIAS			= 'dep';
 	
@@ -25,7 +31,7 @@ class Department extends Contact {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -35,10 +41,10 @@ class Department extends Contact {
 			$table -> parseForeignKey(
 					self::$KEY_CONTACT_DETAILS, ContactDetails::getTable());
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setName($name = '') {
@@ -46,10 +52,5 @@ class Department extends Contact {
 	}
 	public function getName() {
 		return $this -> name;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		
 	}
 }

@@ -8,6 +8,12 @@ requireClass('lib/accounting/AccountValidation');
 
 class Account extends DBEnabled {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	private static $TABLE				= 'accounts';
 	private static $TABLE_ALIAS			= 'acc';
 	
@@ -42,7 +48,7 @@ class Account extends DBEnabled {
 	public function __clone() {}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -54,10 +60,10 @@ class Account extends DBEnabled {
 			$table -> parseColumn(self::$KEY_IBAN, ColumnType::getChar());
 			$table -> parseColumn(self::$KEY_NUMBER, ColumnType::getChar());
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setOrganisation(Organisation $organisation = null) {
@@ -100,65 +106,6 @@ class Account extends DBEnabled {
 	}
 	public function getNumber() {
 		return $this -> number;
-	}
-	
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false) {
-		$keys = array();
-		
-		if ($includeID)
-			$keys = array_merge($keys, array(self::$KEY_ID, $alias, $idAlias));
-		
-		$keys = array_merge($keys, array(
-				array(self::$KEY_ORGANISATION, $alias, 'organisation_fk'),
-				array(self::$KEY_ACCOUNT, $alias),
-				array(self::$KEY_BANK, $alias),
-				array(self::$KEY_BIC, $alias),
-				array(self::$KEY_IBAN, $alias),
-				array(self::$KEY_NUMBER, $alias)));
-		
-		if ($includeForeignKeys)
-			$keys = array_merge($keys, Organisation::listKeys(
-				self::$ALIAS_ORGANISATIONS, 'organisation_id',
-				$includeForeignKeys, $includeID));
-		
-		return $keys;
-	}
-	
-	public static function insertKeys() {
-		
-	}
-	public static function selectKeys(
-			$prefix = '', $includeForeignKeys = false) {
-		return self::listKeys();
-	}
-	
-	public static function getIDAlias() {
-		return self::$ALIAS_ACCOUNTS . '_account_id';
-	}
-	public static function getTableAlias() {
-		return self::$ALIAS_ACCOUNTS;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		$this -> checkID($data, $idAlias);
-		
-		$this -> setAccount(
-				$this -> checkKey($data, self::$KEY_ACCOUNT, ''));
-		$this -> setBank(
-				$this -> checkKey($data, self::$KEY_BANK, ''));
-		$this -> setBIC(
-				$this -> checkKey($data, self::$KEY_BIC, ''));
-		$this -> setIBAN(
-				$this -> checkKey($data, self::$KEY_IBAN, ''));
-		$this -> setNumber(
-				$this -> checkKey($data, self::$KEY_IBAN, ''));
-		
-		parent::load($data, $idAlias, $prefix, $files);
 	}
 	
 	public function toString() {

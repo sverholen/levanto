@@ -8,6 +8,12 @@ requireClass('tools/InputCleaner');
 
 class ContactDetails extends DBEnabled {
 	
+	/**
+	 * An instance of the SQL table that is represented by this class.
+	 * @var tableInstance an instance of the Table class for this datastore.
+	 */
+	private static $tableInstance		= null;
+	
 	public static $TABLE				= 'contact_details';
 	public static $TABLE_ALIAS			= 'cod';
 	
@@ -38,7 +44,7 @@ class ContactDetails extends DBEnabled {
 	}
 	
 	public static function getTable() {
-		if (!$this -> hasSQLTable()) {
+		if (self::$tableInstance == null) {
 			$table = new Table(self::$TABLE, self::$TABLE_ALIAS);
 			
 			$table -> parsePrimaryKey(self::$KEY_ID);
@@ -48,10 +54,10 @@ class ContactDetails extends DBEnabled {
 			$table -> parseColumn(self::$KEY_FAX);
 			$table -> parseColumn(self::$KEY_WEBSITE);
 			
-			$this -> setSQLTable($table);
+			self::$tableInstance = $table;
 		}
 		
-		return $this -> getSQLTable();
+		return self::$tableInstance;
 	}
 	
 	public function setEmail($email) {
@@ -109,46 +115,17 @@ class ContactDetails extends DBEnabled {
 		return $this -> website;
 	}
 	
-	public static function listKeys(
-			$keyAlias = '',
-			$tableAlias = '',
-			$includeForeignKeys = false,
-			$includeID = false) {
-		$keys = array();
-		
-		if ($includeID)
-			$keys = array_merge($keys, array(self::$KEY_ID, $alias, $idAlias));
-		
-		$keys = array_merge($keys, array(
-				array(ContactDetails::$KEY_EMAIL, $alias),
-				array(ContactDetails::$KEY_PHONE, $alias),
-				array(ContactDetails::$KEY_CELL, $alias),
-				array(ContactDetails::$KEY_FAX, $alias),
-				array(ContactDetails::$KEY_WEBSITE, $alias)));
-		
-		return $keys;
-	}
-	
-	public function load(
-			array $data, $idAlias = '', $prefix = '', array $files = array()) {
-		$this -> checkID($data, $idAlias);
-		
-		$this -> setEmail(
-				$this -> checkKey($data, $prefix . self::$KEY_EMAIL, ''));
-		$this -> setPhone(
-				$this -> checkKey($data, $prefix . self::$KEY_PHONE, ''));
-		$this -> setCell(
-				$this -> checkKey($data, $prefix . self::$KEY_CELL, ''));
-		$this -> setFax(
-				$this -> checkKey($data, $prefix . self::$KEY_FAX, ''));
-		$this -> setWebsite(
-				$this -> checkKey($data, $prefix . self::$KEY_WEBSITE, ''));
-	}
-	
 	public function toString() {
 		return $this -> getPhone() . ' / ' . $this -> getCell();
 	}
 	
+	public static function load(array $pdoAssociativeArray = array()) {
+		$object = new ContactDetails();
+		
+		print_r($pdoAssociativeArray);exit;
+		return $object;
+	}
+	/*
 	public function create() {
 		if ($this -> hasID()) return true;
 		
@@ -185,4 +162,5 @@ class ContactDetails extends DBEnabled {
 		if (!$this -> hasID())
 			return false;
 	}
+	*/
 }
